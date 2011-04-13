@@ -1,7 +1,4 @@
 import re, string, datetime
-from PMS import *
-from PMS.Objects import *
-from PMS.Shortcuts import *
 
 NAMESPACE   = {'media':'http://search.yahoo.com/mrss/'}
 VIDEO_PREFIX      = "/video/subpop"
@@ -27,7 +24,7 @@ def Start():
 # Aggressive cache to avoid navigation to empty dirs
 def UpdateCache():
     HTTP.Request(BASE_URL, errors='ignore')
-    for item in XML.ElementFromURL(BASE_URL, True).xpath('//div[@id="artist-list"]//li/a'):
+    for item in HTML.ElementFromURL(BASE_URL).xpath('//div[@id="artist-list"]//li/a'):
        url = BASE_URL + item.get('href')
        HTTP.Request(url, errors='ignore')
     
@@ -36,13 +33,13 @@ def MainMenuMusic():
     dir = MediaContainer(mediaType='music')  
     thumb = "http://www.subpop.com/images/feed_image.jpg"
     dir.Append(Function(DirectoryItem(RecentMusic, "Recent Music", thumb=thumb)))
-    for item in XML.ElementFromURL(BASE_URL, True).xpath('//div[@id="artist-list"]//li/a'):
+    for item in H.ElementFromURL(BASE_URL).xpath('//div[@id="artist-list"]//li/a'):
         if(item.text is not None):
           url = BASE_URL + item.get('href')
-          music = XML.ElementFromURL(url, True).xpath('//ul[@class="downloads"]/li[@class="track"]')
+          music = HTML.ElementFromURL(url).xpath('//ul[@class="downloads"]/li[@class="track"]')
           if(len(music) > 0):
             name = item.text.strip()
-            thumb = XML.ElementFromURL(url, True).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
+            thumb = HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
             dir.Append(Function(DirectoryItem(ArtistMusic, name, thumb=thumb), url = url))
     return dir
 
@@ -59,8 +56,8 @@ def RecentMusic(sender):
 
 def ArtistMusic(sender, url):
     dir = MediaContainer(viewGroup='Details', title2=sender.itemTitle) 
-    thumb = XML.ElementFromURL(url, True).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
-    for item in XML.ElementFromURL(url, True).xpath('//ul[@class="downloads"]/li[@class="track"]'):
+    thumb = HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
+    for item in HTML.ElementFromURL(url).xpath('//ul[@class="downloads"]/li[@class="track"]'):
        title = item.xpath('span[@class="dlasset"]/a')[0].text
        title = title.replace('(MP3)','').strip()
        href = item.xpath('span[@class="dlasset"]/a')[0].get('href')
@@ -74,16 +71,16 @@ def MainMenuVideo():
     dir = MediaContainer(mediaType='video')  
     thumb = "http://www.subpop.com/images/feed_image.jpg"
     dir.Append(Function(DirectoryItem(RecentVideos, "Recent Videos", thumb=thumb)))
-    for item in XML.ElementFromURL(BASE_URL, True).xpath('//div[@id="artist-list"]//li/a'):
+    for item in HTML.ElementFromURL(BASE_URL).xpath('//div[@id="artist-list"]//li/a'):
         if(item.text is not None):
             # This takes a while. Other option is navigation to empty dirs
           url = BASE_URL + item.get('href')
-          videos = XML.ElementFromURL(url, True).xpath('//ul[@class="downloads"]/li[@class="video"]')
+          videos = HTML.ElementFromURL(url).xpath('//ul[@class="downloads"]/li[@class="video"]')
           if(len(videos) > 0):
             name = item.text.strip()
             thumb = None
-            if len(XML.ElementFromURL(url, True).xpath('//ul[@class="slideshow column1"]/li/a')) > 0:
-                thumb = XML.ElementFromURL(url, True).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
+            if len(HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')) > 0:
+                thumb = HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
             dir.Append(Function(DirectoryItem(ArtistVideos, name, thumb=thumb), url = url))
     return dir
     
@@ -101,9 +98,10 @@ def RecentVideos(sender):
 
 #########################################
 def ArtistVideos(sender, url):
-    dir = MediaContainer(viewGroup='Details', title2=sender.itemTitle) 
-    thumb = XML.ElementFromURL(url, True).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
-    for item in XML.ElementFromURL(url, True).xpath('//ul[@class="downloads"]/li[@class="video"]'):
+    dir = MediaContainer(viewGroup='Details', title2=sender.itemTitle)
+    page = HTML.ElementFromURL(url)
+    thumb = page.xpath('//ul[@class="slideshow column1_wide"]/li/a')[0].get('href')
+    for item in page.xpath('//ul[@class="downloads"]/li[@class="video"]'):
        title = item.xpath('span[@class="dlasset"]/a')[0].text
        title = title.replace('(MOV)','').strip()
        href = item.xpath('span[@class="dlasset"]/a')[0].get('href')
@@ -117,29 +115,29 @@ def MainMenuPictures():
   dir = MediaContainer(mediaType='pictures')
   thumb = "http://www.subpop.com/images/feed_image.jpg"
   dir.Append(Function(DirectoryItem(RecentPictures, "Recent Pictures", thumb=thumb)))
-  for item in XML.ElementFromURL(BASE_URL, True).xpath('//div[@id="artist-list"]//li/a'):
+  for item in HTML.ElementFromURL(BASE_URL).xpath('//div[@id="artist-list"]//li/a'):
         if(item.text is not None):
             
            url = BASE_URL + item.get('href')
-           promoPhotos = XML.ElementFromURL(url, True).xpath('//ul[@id="promo_photo"]')
-           albumCovers = XML.ElementFromURL(url, True).xpath('//ul[@id="album-covers"]')
+           promoPhotos = HTML.ElementFromURL(url).xpath('//ul[@id="promo_photo"]')
+           albumCovers = HTML.ElementFromURL(url).xpath('//ul[@id="album-covers"]')
            if(len(promoPhotos) > 0 or len(albumCovers) > 0):
               name = item.text.strip()
-              if len(XML.ElementFromURL(url, True).xpath('//ul[@class="slideshow column1"]/li/a')) > 0:
-                  thumb = XML.ElementFromURL(url, True).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
+              if len(HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')) > 0:
+                  thumb = HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
                   dir.Append(Function(DirectoryItem(ArtistPictures, name, thumb=thumb), url = url))
   return dir
   
 def ArtistPictures(sender, url):
     dir = MediaContainer(title2=sender.itemTitle) 
-    thumb = XML.ElementFromURL(url, True).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
-    for item in XML.ElementFromURL(url, True).xpath('//ul[@id="promo_photo"]/li'):
+    thumb = HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
+    for item in HTML.ElementFromURL(url).xpath('//ul[@id="promo_photo"]/li'):
        title = item.xpath('span[@class="dlasset"]/a')[0].text
        href = item.xpath('span[@class="dlasset"]/a')[0].get('href')
        updated = item.xpath('span[@class="dlposted"]')[0].get('title')
        subtitle = Datetime.ParseDate(updated).strftime('%a %b %d, %Y')
        dir.Append(PhotoItem(href, title=title, subtitle=subtitle))
-    for item in XML.ElementFromURL(url, True).xpath('//ul[@id="album-covers"]/li'):
+    for item in HTML.ElementFromURL(url).xpath('//ul[@id="album-covers"]/li'):
        title = item.xpath('span[@class="dlasset"]/a')[0].text
        href = item.xpath('span[@class="dlasset"]/a')[0].get('href')
        updated = item.xpath('span[@class="dlposted"]')[0].get('title')
