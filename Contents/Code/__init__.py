@@ -152,7 +152,8 @@ def RecentPictures(sender):
 	for entry in podcast['items']: 
 		updated = Datetime.ParseDate(entry.updated).strftime('%a %b %d, %Y')
 		summary = StripHTML(entry.summary, True)
-		summary = summary + "Author: "+entry.author 
+		if 'author' in entry:
+			summary = summary + "Author: " + entry.author 
 		pictureUrl = entry.links[0].href
 		dir.Append(PhotoItem(pictureUrl, title=entry.title, summary=summary, subtitle=updated))
 	return dir
