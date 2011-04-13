@@ -33,13 +33,13 @@ def MainMenuMusic():
 	dir = MediaContainer(mediaType='music')  
 	thumb = "http://www.subpop.com/images/feed_image.jpg"
 	dir.Append(Function(DirectoryItem(RecentMusic, "Recent Music", thumb=thumb)))
-	for item in H.ElementFromURL(BASE_URL).xpath('//div[@id="artist-list"]//li/a'):
+	for item in HTML.ElementFromURL(BASE_URL).xpath('//div[@id="artist-list"]//li/a'):
 		if(item.text is not None):
 		  url = BASE_URL + item.get('href')
 		  music = HTML.ElementFromURL(url).xpath('//ul[@class="downloads"]/li[@class="track"]')
 		  if(len(music) > 0):
 			name = item.text.strip()
-			thumb = HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
+			thumb = HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1_wide"]/li/a')[0].get('href')
 			dir.Append(Function(DirectoryItem(ArtistMusic, name, thumb=thumb), url = url))
 	return dir
 
@@ -55,9 +55,10 @@ def RecentMusic(sender):
 	return dir
 
 def ArtistMusic(sender, url):
-	dir = MediaContainer(viewGroup='Details', title2=sender.itemTitle) 
-	thumb = HTML.ElementFromURL(url).xpath('//ul[@class="slideshow column1"]/li/a')[0].get('href')
-	for item in HTML.ElementFromURL(url).xpath('//ul[@class="downloads"]/li[@class="track"]'):
+	dir = MediaContainer(viewGroup='Details', title2=sender.itemTitle)
+	page = HTML.ElementFromURL(url)
+	thumb = page.xpath('//ul[@class="slideshow column1_wide"]/li/a')[0].get('href')
+	for item in page.xpath('//ul[@class="downloads"]/li[@class="track"]'):
 	   title = item.xpath('span[@class="dlasset"]/a')[0].text
 	   title = title.replace('(MP3)','').strip()
 	   href = item.xpath('span[@class="dlasset"]/a')[0].get('href')
